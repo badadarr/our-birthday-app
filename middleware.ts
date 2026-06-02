@@ -3,7 +3,8 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
-  // Allows testing the 00:00:00 transition without waiting
+  // Target: 14 Juni 2026 00:00:00 WIB (Jakarta/Indonesia, UTC+7)
+  // Dalam UTC: 13 Juni 2026 17:00:00 UTC
   const targetTimeStr = process.env.NEXT_PUBLIC_MOCK_TARGET_TIME || "2026-06-13T17:00:00Z";
   const targetTime = new Date(targetTimeStr).getTime();
   const now = Date.now();

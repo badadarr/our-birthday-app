@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 
 export default function HeroSection() {
     const text = "The ship has docked. Welcome to your day, [Her Name].";
@@ -14,7 +14,7 @@ export default function HeroSection() {
         }),
     };
 
-    const child = {
+    const child: Variants = {
         visible: {
             opacity: 1,
             y: 0,
