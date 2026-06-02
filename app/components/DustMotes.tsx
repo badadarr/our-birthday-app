@@ -18,15 +18,21 @@ export default function DustMotes() {
     const [particles, setParticles] = useState<Particle[]>([]);
 
     useEffect(() => {
-        const generatedParticles = Array.from({ length: NUM_PARTICLES }).map((_, i) => ({
-            id: i,
-            x: Math.random() * 100, // percentage
-            y: Math.random() * 100, // percentage
-            size: Math.random() * 4 + 1, // 1 to 5px
-            duration: Math.random() * 10 + 10, // 10s to 20s
-            delay: Math.random() * 5,
-        }));
-        setParticles(generatedParticles);
+        // Menggunakan setTimeout untuk menghindari pemanggilan setState secara sinkronus 
+        // di dalam useEffect yang memicu peringatan ESLint (cascading renders).
+        const timer = setTimeout(() => {
+            const generatedParticles = Array.from({ length: NUM_PARTICLES }).map((_, i) => ({
+                id: i,
+                x: Math.random() * 100,
+                y: Math.random() * 100,
+                size: Math.random() * 4 + 1,
+                duration: Math.random() * 10 + 10,
+                delay: Math.random() * 5,
+            }));
+            setParticles(generatedParticles);
+        }, 0);
+
+        return () => clearTimeout(timer);
     }, []);
 
     if (particles.length === 0) return null;

@@ -10,13 +10,15 @@ export function middleware(request: NextRequest) {
   const now = Date.now();
   const { pathname } = request.nextUrl;
 
+  const isBypass = request.cookies.get("bypass_teaser")?.value === "true";
+
   // Jika belum waktunya dan user mencoba akses halaman utama, lempar ke teaser
-  if (now < targetTime && pathname === "/") {
+  if (now < targetTime && pathname === "/" && !isBypass) {
     return NextResponse.redirect(new URL("/teaser", request.url));
   }
 
   // Jika sudah waktunya dan user masih di teaser, arahkan ke halaman utama
-  if (now >= targetTime && pathname === "/teaser") {
+  if (now >= targetTime && pathname === "/teaser" && !isBypass) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 

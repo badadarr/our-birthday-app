@@ -3,6 +3,7 @@ import MemoryGallery from "./components/MemoryGallery";
 import DigitalLetter from "./components/DigitalLetter";
 import DustMotes from "./components/DustMotes";
 import TransitionSeparator from "./components/TransitionSeparator";
+import RealWorldBridge from "./components/RealWorldBridge";
 
 export default function Home() {
     return (
@@ -21,7 +22,9 @@ export default function Home() {
             
             <DigitalLetter />
             
-            <div className="h-32 bg-transparent" /> {/* Spacer */}
+            <RealWorldBridge />
+            
+            <div className="h-16 bg-transparent" /> {/* Spacer */}
         </main>
     );
 }

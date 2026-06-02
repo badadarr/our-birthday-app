@@ -2,6 +2,33 @@
 
 import { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import SecretVoiceNote from './SecretVoiceNote';
+
+function TypewriterText({ text, className, delayOffset = 0 }: { text: string, className?: string, delayOffset?: number }) {
+    return (
+        <motion.p 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={{
+                visible: { transition: { staggerChildren: 0.03, delayChildren: delayOffset } }
+            }}
+            className={className}
+        >
+            {text.split('').map((char, index) => (
+                <motion.span
+                    key={`${char}-${index}`}
+                    variants={{
+                        hidden: { opacity: 0 },
+                        visible: { opacity: 1 }
+                    }}
+                >
+                    {char}
+                </motion.span>
+            ))}
+        </motion.p>
+    );
+}
 
 export default function DigitalLetter() {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -19,25 +46,32 @@ export default function DigitalLetter() {
                 style={{ y, opacity }}
                 className="max-w-2xl mx-auto space-y-8 text-center md:text-left"
             >
-                <p className="font-serif text-2xl md:text-4xl text-amber-900/90 leading-relaxed font-light">
-                    My dearest,
-                </p>
-                <p className="font-serif text-xl md:text-2xl text-amber-900/80 leading-relaxed font-light">
-                    The night voyage has finally ended. What started as my day has now gently shifted into yours. Every passing minute was leading up to this exact moment.
-                </p>
-                <p className="font-serif text-xl md:text-2xl text-amber-900/80 leading-relaxed font-light">
-                    As the morning light fills the room, I want you to know how much you mean to me. The world spins, the sun sets and rises, but my love for you remains a constant anchor.
-                </p>
-                <p className="font-serif text-xl md:text-2xl text-amber-900/80 leading-relaxed font-light">
-                    Happy Birthday. Welcome to your special day.
-                </p>
+                <TypewriterText 
+                    text="My dearest," 
+                    className="font-serif text-2xl md:text-4xl text-amber-900/90 leading-relaxed font-light" 
+                />
+                <TypewriterText 
+                    text="The night voyage has finally ended. What started as my day has now gently shifted into yours. Every passing minute was leading up to this exact moment." 
+                    className="font-serif text-xl md:text-2xl text-amber-900/80 leading-relaxed font-light" 
+                    delayOffset={0.5}
+                />
+                <TypewriterText 
+                    text="As the morning light fills the room, I want you to know how much you mean to me. The world spins, the sun sets and rises, but my love for you remains a constant anchor." 
+                    className="font-serif text-xl md:text-2xl text-amber-900/80 leading-relaxed font-light" 
+                    delayOffset={1}
+                />
+                <TypewriterText 
+                    text="Happy Birthday. Welcome to your special day." 
+                    className="font-serif text-xl md:text-2xl text-amber-900/80 leading-relaxed font-light" 
+                    delayOffset={1.5}
+                />
 
                 {/* ── CAPCUT VIDEO EDIT SECTION ── */}
                 <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ delay: 0.3, duration: 1 }}
+                    transition={{ delay: 2, duration: 1 }}
                     className="relative my-16 mx-auto w-full max-w-3xl rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(120,53,15,0.15)] ring-1 ring-amber-900/10 bg-amber-100/30 flex items-center justify-center min-h-[300px] md:min-h-[400px]"
                 >
                     <video 
@@ -64,13 +98,19 @@ export default function DigitalLetter() {
                 </motion.div>
 
                 <div className="pt-8">
-                    <p className="font-serif text-2xl text-amber-900/90 italic">
-                        With all my love,
-                    </p>
-                    <p className="font-serif text-2xl text-amber-900/90 mt-2">
-                        Your Fellow Voyager
-                    </p>
+                    <TypewriterText 
+                        text="With all my love," 
+                        className="font-serif text-2xl text-amber-900/90 italic" 
+                        delayOffset={2.5}
+                    />
+                    <TypewriterText 
+                        text="Your Fellow Voyager" 
+                        className="font-serif text-2xl text-amber-900/90 mt-2" 
+                        delayOffset={3}
+                    />
                 </div>
+
+                <SecretVoiceNote />
             </motion.div>
         </section>
     );

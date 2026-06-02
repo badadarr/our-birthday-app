@@ -7,6 +7,8 @@ import { Anchor } from 'lucide-react';
 
 interface AudioContextType {
     triggerFadeIn: () => void;
+    lowerVolume: () => void;
+    restoreVolume: () => void;
 }
 
 const AudioContext = createContext<AudioContextType | null>(null);
@@ -57,8 +59,52 @@ export default function AudioProvider({ children }: { children: React.ReactNode 
         }, intervalTime);
     };
 
+    const lowerVolume = () => {
+        if (!audioRef.current) return;
+        
+        let currentVolume = audioRef.current.volume;
+        const targetVolume = 0.1;
+        const fadeDuration = 2000; // 2 seconds
+        const steps = 20;
+        const stepIncrement = (currentVolume - targetVolume) / steps;
+        const intervalTime = fadeDuration / steps;
+
+        const fadeInterval = setInterval(() => {
+            currentVolume -= stepIncrement;
+            if (currentVolume <= targetVolume) {
+                currentVolume = targetVolume;
+                clearInterval(fadeInterval);
+            }
+            if (audioRef.current) {
+                audioRef.current.volume = currentVolume;
+            }
+        }, intervalTime);
+    };
+
+    const restoreVolume = () => {
+        if (!audioRef.current) return;
+        
+        let currentVolume = audioRef.current.volume;
+        const targetVolume = 0.7;
+        const fadeDuration = 2000; // 2 seconds
+        const steps = 20;
+        const stepIncrement = (targetVolume - currentVolume) / steps;
+        const intervalTime = fadeDuration / steps;
+
+        const fadeInterval = setInterval(() => {
+            currentVolume += stepIncrement;
+            if (currentVolume >= targetVolume) {
+                currentVolume = targetVolume;
+                clearInterval(fadeInterval);
+            }
+            if (audioRef.current) {
+                audioRef.current.volume = currentVolume;
+            }
+        }, intervalTime);
+    };
+
     return (
-        <AudioContext.Provider value={{ triggerFadeIn }}>
+        <AudioContext.Provider value={{ triggerFadeIn, lowerVolume, restoreVolume }}>
             {/* Hidden Audio Element */}
             <audio 
                 ref={audioRef} 
