@@ -3,7 +3,7 @@
 import { motion, type Variants } from 'framer-motion';
 
 export default function HeroSection() {
-    const text = "The ship has docked. Welcome to your day, [Her Name].";
+    const text = "The ship has docked. Welcome to your day, My Aas Sayangg Sheng shengg huu.";
     const words = text.split(" ");
 
     const container = {
