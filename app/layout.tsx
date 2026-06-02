@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "The Night Transit",
-  description: "A transition from my day to your day.",
+  title: "The Night Voyage",
+  description: "Sailing through the night to reach you.",
 };
 
 export default function RootLayout({
@@ -25,7 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-slate-950">
+      <body className="min-h-full flex flex-col bg-[#020810]">
         <AudioProvider>
           {children}
         </AudioProvider>

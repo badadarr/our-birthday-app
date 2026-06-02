@@ -2,6 +2,7 @@ import HeroSection from "./components/HeroSection";
 import MemoryGallery from "./components/MemoryGallery";
 import DigitalLetter from "./components/DigitalLetter";
 import DustMotes from "./components/DustMotes";
+import TransitionSeparator from "./components/TransitionSeparator";
 
 export default function Home() {
     return (
@@ -14,6 +15,10 @@ export default function Home() {
             
             <HeroSection />
             <MemoryGallery />
+            
+            {/* Elegant visual transition replacing plain whitespace */}
+            <TransitionSeparator />
+            
             <DigitalLetter />
             
             <div className="h-32 bg-transparent" /> {/* Spacer */}

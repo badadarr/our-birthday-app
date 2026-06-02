@@ -3,6 +3,7 @@
 
 import React, { createContext, useContext, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Anchor } from 'lucide-react';
 
 interface AudioContextType {
     triggerFadeIn: () => void;
@@ -77,25 +78,59 @@ export default function AudioProvider({ children }: { children: React.ReactNode 
                     <motion.div
                         initial={{ opacity: 1 }}
                         exit={{ opacity: 0, transition: { duration: 1.5, ease: 'easeInOut' } }}
-                        className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-slate-950 text-slate-200"
+                        className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#020810] text-slate-200"
                     >
+                        {/* Subtle star dots on the landing screen */}
+                        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                            {Array.from({ length: 30 }).map((_, i) => (
+                                <motion.div
+                                    key={i}
+                                    animate={{ opacity: [0.15, 0.6, 0.15] }}
+                                    transition={{ repeat: Infinity, duration: 2 + (i % 3), delay: (i % 5) * 0.5 }}
+                                    className="absolute w-[2px] h-[2px] rounded-full bg-white"
+                                    style={{
+                                        left: `${(i * 13.7 + 5) % 100}%`,
+                                        top: `${(i * 8.9 + 3) % 100}%`,
+                                    }}
+                                />
+                            ))}
+                        </div>
+
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 0.6, scale: 1 }}
+                            transition={{ delay: 0.2, duration: 1.5 }}
+                            className="mb-6 text-cyan-300 drop-shadow-[0_0_15px_rgba(103,232,249,0.3)]"
+                        >
+                            <Anchor className="w-10 h-10" strokeWidth={1} />
+                        </motion.div>
+
                         <motion.h1
                             initial={{ y: 20, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
                             transition={{ delay: 0.5, duration: 1 }}
-                            className="text-2xl md:text-4xl font-light tracking-widest mb-8 text-center"
+                            className="text-2xl md:text-4xl font-light tracking-[0.2em] mb-3 text-center"
                         >
-                            The Night Transit
+                            The Night Voyage
                         </motion.h1>
+
+                        <motion.p
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 0.5 }}
+                            transition={{ delay: 1, duration: 1 }}
+                            className="text-[11px] tracking-[0.2em] uppercase text-slate-500 mb-10"
+                        >
+                            June 13 → June 14
+                        </motion.p>
 
                         <motion.button
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
-                            transition={{ delay: 1, duration: 0.8 }}
+                            transition={{ delay: 1.2, duration: 0.8 }}
                             onClick={handleStartJourney}
-                            className="px-8 py-3 rounded-full border border-slate-500/50 bg-slate-900/50 hover:bg-slate-800 transition-all duration-300 tracking-widest text-sm uppercase shadow-[0_0_20px_rgba(255,255,255,0.05)] hover:shadow-[0_0_20px_rgba(255,255,255,0.2)]"
+                            className="group relative px-10 py-3.5 rounded-full border border-cyan-400/20 bg-cyan-500/5 hover:bg-cyan-500/10 transition-all duration-500 tracking-[0.2em] text-xs uppercase text-cyan-200/80 hover:text-cyan-100 shadow-[0_0_30px_rgba(103,232,249,0.05)] hover:shadow-[0_0_40px_rgba(103,232,249,0.15)]"
                         >
-                            Mulai Perjalanan
+                            <span className="relative z-10">Mulai Perjalanan</span>
                         </motion.button>
                     </motion.div>
                 )}

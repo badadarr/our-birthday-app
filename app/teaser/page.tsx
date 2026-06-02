@@ -4,68 +4,71 @@
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, useAnimation } from 'framer-motion';
-import { useAudio } from '@/app/components/AudioPlayer'; // Sesuaikan path
+import { Sailboat } from 'lucide-react';
+import { useAudio } from '@/app/components/AudioPlayer';
 import { useCountdown } from '@/hooks/useCountdown';
 
 const TARGET_TIME_STR = process.env.NEXT_PUBLIC_MOCK_TARGET_TIME || '2026-06-13T17:00:00Z';
 
-// Data statis untuk Bokeh agar tidak terjadi Hydration Error
-const BOKEH_DATA = Array.from({ length: 20 }).map((_, i) => ({
+// ── Static data (deterministic to prevent hydration errors) ──
+
+// Stars scattered across the sky (upper 60%)
+const STARS = Array.from({ length: 50 }).map((_, i) => ({
     id: i,
-    top: `${5 + (i * 4.5)}%`, // Tersebar vertikal
-    size: (i % 3 === 0) ? 14 : (i % 2 === 0) ? 8 : 20,
-    duration: 6 + (i % 5) * 1.5, // Variasi kecepatan
-    delay: -(i * 2),
-    opacity: 0.1 + (i % 4) * 0.1,
+    left: `${(i * 7.3 + 3) % 100}%`,
+    top: `${(i * 5.1 + 2) % 55}%`,
+    size: i % 5 === 0 ? 3 : i % 3 === 0 ? 2 : 1,
+    twinkleDuration: 2 + (i % 4) * 1.5,
+    twinkleDelay: (i % 7) * 0.4,
+    baseOpacity: 0.3 + (i % 5) * 0.15,
 }));
 
-// Speed lines untuk efek pergerakan cepat kereta
-const SPEED_LINES = Array.from({ length: 15 }).map((_, i) => ({
+// Slow-drifting ocean reflections (lower half)
+const WAVE_LINES = Array.from({ length: 18 }).map((_, i) => ({
     id: i,
-    top: `${Math.random() * 100}%`,
-    width: `${Math.random() * 15 + 5}vw`,
-    duration: Math.random() * 0.8 + 0.4,
-    delay: Math.random() * 1,
-    opacity: Math.random() * 0.2 + 0.05,
+    top: `${55 + (i * 2.5)}%`,
+    width: `${10 + (i % 5) * 8}vw`,
+    duration: 12 + (i % 4) * 5,
+    delay: -(i * 1.5),
+    opacity: 0.04 + (i % 3) * 0.03,
+}));
+
+// Floating particles (bioluminescence in the air)
+const PARTICLES = Array.from({ length: 20 }).map((_, i) => ({
+    id: i,
+    left: `${(i * 11.7 + 5) % 100}%`,
+    top: `${(i * 8.3 + 15) % 80}%`,
+    size: i % 3 === 0 ? 4 : 2,
+    floatDuration: 8 + (i % 5) * 3,
+    floatDelay: (i % 6) * 1.2,
+    driftX: i % 2 === 0 ? 15 : -15,
 }));
 
 export default function TeaserPage() {
     const router = useRouter();
     const { triggerFadeIn } = useAudio();
-    const bokehControls = useAnimation();
-    const speedLineControls = useAnimation();
+    const waveControls = useAnimation();
 
     const { timeLeft, isArrived, isClient } = useCountdown(TARGET_TIME_STR);
-    const [isBypassed, setIsBypassed] = useState(false);
     const hasTriggeredArrival = useRef(false);
     const [isFadingOut, setIsFadingOut] = useState(false);
-    
-    const arrived = isArrived || isBypassed;
 
-    // Menjalankan animasi bokeh dan speed lines saat pertama kali mount
+    const arrived = isArrived;
+
+    // Start wave drift animation on mount
     useEffect(() => {
-        bokehControls.start((i) => ({
-            x: ['100vw', '-20vw'],
+        waveControls.start((i) => ({
+            x: ['80vw', '-40vw'],
             transition: {
                 repeat: Infinity,
-                duration: BOKEH_DATA[i].duration,
+                duration: WAVE_LINES[i].duration,
                 ease: 'linear',
-                delay: BOKEH_DATA[i].delay,
+                delay: WAVE_LINES[i].delay,
             },
         }));
+    }, [waveControls]);
 
-        speedLineControls.start((i) => ({
-            x: ['100vw', '-50vw'],
-            transition: {
-                repeat: Infinity,
-                duration: SPEED_LINES[i].duration,
-                ease: 'linear',
-                delay: SPEED_LINES[i].delay,
-            },
-        }));
-    }, [bokehControls, speedLineControls]);
-
-    // Logika Trigger 00:00
+    // Arrival trigger
     useEffect(() => {
         if (arrived && !hasTriggeredArrival.current) {
             hasTriggeredArrival.current = true;
@@ -74,140 +77,213 @@ export default function TeaserPage() {
     }, [arrived]);
 
     const handleArrivalSequence = () => {
-        // Hentikan laju lampu dan garis (kereta berhenti)
-        bokehControls.stop();
-        speedLineControls.stop();
-
-        // Trigger lagu membesar volumenya
+        waveControls.stop();
         triggerFadeIn();
 
-        // Urutan Transisi ke halaman utama
         setTimeout(() => {
-            setIsFadingOut(true); // Layar mulai menggelap & tiket memudar
-        }, 4000); // Biarkan user menikmati momen 'Arrived' selama 4 detik
+            setIsFadingOut(true);
+        }, 4000);
 
         setTimeout(() => {
-            router.push('/'); // Pindah ke halaman kejutan utama
+            router.push('/');
         }, 6000);
     };
 
-    // Mencegah render hydration mismatch pada timer
-    if (!isClient) return <div className="min-h-screen bg-slate-950" />;
+    if (!isClient) return <div className="min-h-screen bg-[#020810]" />;
 
     return (
         <motion.main
             animate={{ opacity: isFadingOut ? 0 : 1 }}
             transition={{ duration: 2, ease: 'easeInOut' }}
-            className="relative min-h-screen bg-slate-950 overflow-hidden flex items-center justify-center font-sans perspective-[1000px]"
+            className="relative min-h-screen bg-[#020810] overflow-hidden flex flex-col items-center justify-center font-sans"
         >
-            {/* Speed Lines Effect */}
-            <div className="absolute inset-0 z-0 opacity-50 pointer-events-none">
-                {SPEED_LINES.map((line, i) => (
-                    <motion.div
-                        key={`speed-${line.id}`}
-                        custom={i}
-                        animate={speedLineControls}
-                        className="absolute h-[1px] bg-slate-300"
-                        style={{ top: line.top, width: line.width, opacity: line.opacity }}
-                    />
-                ))}
+            {/* ═══════════════ ATMOSPHERE LAYERS ═══════════════ */}
+
+            {/* Sky gradient: dark navy at top → deep blue-black at horizon */}
+            <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#050d1a] via-[#071428] to-[#020810]" />
+
+            {/* Ocean gradient below horizon (bottom 45%) */}
+            <div className="absolute bottom-0 left-0 right-0 h-[45%] z-0 bg-gradient-to-b from-transparent via-[#030e1c] to-[#010509]" />
+
+            {/* Horizon line — faint atmospheric glow */}
+            <div className="absolute top-[55%] left-0 right-0 h-[2px] z-[1] bg-gradient-to-r from-transparent via-cyan-700/20 to-transparent" />
+            <div className="absolute top-[55%] left-0 right-0 h-16 z-[1] bg-gradient-to-b from-cyan-900/5 to-transparent blur-sm" />
+
+            {/* ═══════════════ CRESCENT MOON ═══════════════ */}
+            <div className="absolute top-[8%] right-[15%] z-[2] pointer-events-none">
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.5, duration: 3 }}
+                    className="relative"
+                >
+                    {/* Moon glow */}
+                    <div className="absolute -inset-8 rounded-full bg-cyan-100/5 blur-2xl" />
+                    <div className="absolute -inset-4 rounded-full bg-slate-100/5 blur-xl" />
+                    {/* Moon body */}
+                    <div className="w-8 h-8 rounded-full bg-slate-200/90 shadow-[0_0_30px_rgba(200,220,255,0.3)]" />
+                    {/* Crescent shadow */}
+                    <div className="absolute top-[1px] left-[6px] w-7 h-7 rounded-full bg-[#050d1a]" />
+                </motion.div>
             </div>
 
-            {/* Background Parallax Bokeh */}
-            <div className="absolute inset-0 z-0 opacity-60 pointer-events-none">
-                {BOKEH_DATA.map((dot, i) => (
+            {/* ═══════════════ TWINKLING STARS ═══════════════ */}
+            <div className="absolute inset-0 z-[1] pointer-events-none">
+                {STARS.map((star) => (
                     <motion.div
-                        key={`bokeh-${dot.id}`}
-                        custom={i}
-                        animate={bokehControls}
-                        className="absolute rounded-full bg-yellow-200/80 blur-[2px]"
+                        key={`star-${star.id}`}
+                        animate={{ opacity: [star.baseOpacity * 0.3, star.baseOpacity, star.baseOpacity * 0.3] }}
+                        transition={{
+                            repeat: Infinity,
+                            duration: star.twinkleDuration,
+                            delay: star.twinkleDelay,
+                            ease: 'easeInOut',
+                        }}
+                        className="absolute rounded-full bg-white"
                         style={{
-                            top: dot.top,
-                            width: dot.size,
-                            height: dot.size,
-                            opacity: dot.opacity,
+                            left: star.left,
+                            top: star.top,
+                            width: star.size,
+                            height: star.size,
+                            boxShadow: star.size > 2
+                                ? '0 0 6px rgba(200,220,255,0.6)'
+                                : '0 0 2px rgba(200,220,255,0.3)',
                         }}
                     />
                 ))}
             </div>
 
-            {/* Arrival Soft Flash Effect */}
+            {/* ═══════════════ FLOATING PARTICLES (Bioluminescence) ═══════════════ */}
+            <div className="absolute inset-0 z-[2] pointer-events-none">
+                {PARTICLES.map((p) => (
+                    <motion.div
+                        key={`particle-${p.id}`}
+                        animate={{
+                            y: [0, -30, 0],
+                            x: [0, p.driftX, 0],
+                            opacity: [0, 0.5, 0],
+                        }}
+                        transition={{
+                            repeat: Infinity,
+                            duration: p.floatDuration,
+                            delay: p.floatDelay,
+                            ease: 'easeInOut',
+                        }}
+                        className="absolute rounded-full bg-cyan-300/60 blur-[1px]"
+                        style={{
+                            left: p.left,
+                            top: p.top,
+                            width: p.size,
+                            height: p.size,
+                            boxShadow: '0 0 8px rgba(103,232,249,0.4)',
+                        }}
+                    />
+                ))}
+            </div>
+
+            {/* ═══════════════ OCEAN WAVE LINES ═══════════════ */}
+            <div className="absolute inset-0 z-[2] pointer-events-none">
+                {WAVE_LINES.map((line, i) => (
+                    <motion.div
+                        key={`wave-${line.id}`}
+                        custom={i}
+                        animate={waveControls}
+                        className="absolute h-[1px] rounded-full bg-gradient-to-r from-transparent via-cyan-300/30 to-transparent"
+                        style={{ top: line.top, width: line.width, opacity: line.opacity }}
+                    />
+                ))}
+            </div>
+
+            {/* Arrival Soft Flash */}
             {arrived && (
                 <motion.div
                     initial={{ opacity: 0 }}
-                    animate={{ opacity: [0, 0.15, 0] }}
-                    transition={{ duration: 2, ease: "easeOut" }}
-                    className="absolute inset-0 z-10 bg-amber-200 pointer-events-none mix-blend-overlay"
+                    animate={{ opacity: [0, 0.2, 0] }}
+                    transition={{ duration: 2.5, ease: 'easeOut' }}
+                    className="absolute inset-0 z-10 bg-cyan-200 pointer-events-none mix-blend-overlay"
                 />
             )}
 
-            {/* Dev Only Bypass Button */}
-            {process.env.NODE_ENV === 'development' && !arrived && (
-                <button 
-                    onClick={() => setIsBypassed(true)}
-                    className="absolute top-8 right-8 z-50 bg-amber-500/20 hover:bg-amber-500/40 border border-amber-500/50 text-amber-500 text-xs tracking-widest uppercase px-4 py-2 rounded transition-colors"
-                >
-                    Bypass to 00:00
-                </button>
-            )}
+            {/* Vignette overlay */}
+            <div className="absolute inset-0 z-[5] pointer-events-none bg-[radial-gradient(ellipse_at_center,_transparent_10%,_#020810_85%)]" />
 
-            {/* Vignette Effect Jendela Kereta */}
-            <div className="absolute inset-0 z-10 pointer-events-none bg-[radial-gradient(ellipse_at_center,_transparent_0%,_#020617_100%)]" />
+            {/* ═══════════════ ROMANTIC TAGLINE (above ticket) ═══════════════ */}
+            <motion.p
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8, duration: 2, ease: 'easeOut' }}
+                className="relative z-20 text-slate-400/70 text-[11px] md:text-xs tracking-[0.25em] uppercase mb-8 text-center"
+            >
+                Sailing through the night to reach you
+            </motion.p>
 
-            {/* Ticket UI Container */}
+            {/* ═══════════════ TICKET UI ═══════════════ */}
             <motion.div
-                initial={{ y: 50, opacity: 0, rotateX: 10 }}
-                animate={{ y: 0, opacity: 1, rotateX: 0 }}
-                transition={{ duration: 1.5, ease: 'easeOut' }}
+                initial={{ y: 40, opacity: 0, scale: 0.97 }}
+                animate={{ y: 0, opacity: 1, scale: 1 }}
+                transition={{ duration: 1.8, ease: 'easeOut', delay: 0.3 }}
                 className="relative z-20 w-[90%] max-w-md"
             >
-                {/* Floating wrapper for the ticket */}
+                {/* Floating + rocking wrapper */}
                 <motion.div
-                    animate={arrived ? { y: 0 } : { y: [-5, 5, -5] }}
-                    transition={arrived ? {} : { repeat: Infinity, duration: 4, ease: "easeInOut" }}
-                    className="relative bg-white/5 backdrop-blur-md border border-white/10 p-8 rounded-2xl shadow-[0_0_40px_rgba(0,0,0,0.5)] overflow-hidden"
+                    animate={arrived
+                        ? { y: 0, rotateZ: 0 }
+                        : { y: [-3, 3, -3], rotateZ: [-0.4, 0.4, -0.4] }
+                    }
+                    transition={arrived ? {} : { repeat: Infinity, duration: 6, ease: 'easeInOut' }}
+                    className="relative bg-white/[0.04] backdrop-blur-lg border border-white/[0.08] p-8 rounded-2xl shadow-[0_0_60px_rgba(0,0,0,0.6),_inset_0_1px_0_rgba(255,255,255,0.05)] overflow-hidden"
                 >
-                    {/* Light Sweep Reflection Effect */}
+                    {/* Light sweep */}
                     {!arrived && (
                         <motion.div
-                            animate={{ x: ['-100%', '200%'] }}
-                            transition={{ repeat: Infinity, duration: 3, delay: 2, ease: "linear" }}
-                            className="absolute top-0 bottom-0 w-24 bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-[-20deg] z-0"
+                            animate={{ x: ['-150%', '250%'] }}
+                            transition={{ repeat: Infinity, duration: 5, delay: 3, ease: 'linear' }}
+                            className="absolute top-0 bottom-0 w-20 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent skew-x-[-20deg] z-0"
                         />
                     )}
 
-                    {/* Efek Perforasi Tiket */}
-                    <div className="absolute top-1/2 -left-6 w-12 h-12 bg-slate-950 rounded-full -translate-y-1/2 shadow-inner z-10" />
-                    <div className="absolute top-1/2 -right-6 w-12 h-12 bg-slate-950 rounded-full -translate-y-1/2 shadow-inner z-10" />
+                    {/* Ticket perforations */}
+                    <div className="absolute top-1/2 -left-5 w-10 h-10 bg-[#020810] rounded-full -translate-y-1/2 z-10" />
+                    <div className="absolute top-1/2 -right-5 w-10 h-10 bg-[#020810] rounded-full -translate-y-1/2 z-10" />
 
-                    <div className="relative z-10 border-b-2 border-dashed border-white/20 pb-6 mb-6 text-center">
-                        <motion.h2
-                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }}
-                            className="text-slate-400 text-xs tracking-[0.3em] uppercase mb-4"
+                    {/* ── Header ── */}
+                    <div className="relative z-10 border-b border-dashed border-white/10 pb-6 mb-6">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 1 }}
+                            className="flex items-center justify-center gap-2 mb-5"
                         >
-                            Transit Route
-                        </motion.h2>
+                            <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-white/10" />
+                            <span className="text-slate-500 text-[10px] tracking-[0.35em] uppercase">
+                                Voyage Route
+                            </span>
+                            <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-white/10" />
+                        </motion.div>
 
-                        <div className="flex justify-between items-center px-4">
+                        <div className="flex justify-between items-center px-2">
                             <motion.div
                                 initial={{ x: -20, opacity: 0 }}
                                 animate={{ x: 0, opacity: 1 }}
                                 transition={{ delay: 1.2, duration: 0.8 }}
                                 className="text-left"
                             >
-                                <p className="text-2xl text-slate-200 font-light">13 Jun</p>
-                                <p className="text-xs text-slate-500 mt-1">My Day</p>
+                                <p className="text-2xl text-slate-200 font-light tracking-wide">13 Jun</p>
+                                <p className="text-[10px] text-cyan-400/60 mt-1 tracking-widest uppercase">My Day</p>
                             </motion.div>
 
-                            {/* Ikon panah/kereta dengan glow */}
-                            <div className="flex-1 px-4 relative flex items-center justify-center">
-                                <div className="h-[1px] w-full bg-slate-600" />
+                            {/* Ship icon */}
+                            <div className="flex-1 px-3 relative flex items-center justify-center">
+                                <div className="h-[1px] w-full bg-gradient-to-r from-cyan-800/20 via-cyan-600/30 to-cyan-800/20" />
                                 <motion.div
-                                    animate={arrived ? { x: 0 } : { x: [-15, 15, -15] }}
-                                    transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
-                                    className="absolute text-amber-500/80 text-lg drop-shadow-[0_0_5px_rgba(245,158,11,0.5)]"
+                                    animate={arrived
+                                        ? { x: 0, rotateZ: 0 }
+                                        : { x: [-8, 8, -8], rotateZ: [-4, 4, -4] }
+                                    }
+                                    transition={{ repeat: Infinity, duration: 3.5, ease: 'easeInOut' }}
+                                    className="absolute text-cyan-400 bg-[#020810]/80 px-1.5 drop-shadow-[0_0_8px_rgba(103,232,249,0.5)]"
                                 >
-                                    &#10230;
+                                    <Sailboat className="w-5 h-5" strokeWidth={1.5} />
                                 </motion.div>
                             </div>
 
@@ -217,63 +293,84 @@ export default function TeaserPage() {
                                 transition={{ delay: 1.4, duration: 0.8 }}
                                 className="text-right"
                             >
-                                <p className="text-2xl text-slate-200 font-light">14 Jun</p>
-                                <p className="text-xs text-slate-500 mt-1">Your Day</p>
+                                <p className="text-2xl text-slate-200 font-light tracking-wide">14 Jun</p>
+                                <p className="text-[10px] text-cyan-400/60 mt-1 tracking-widest uppercase">Your Day</p>
                             </motion.div>
                         </div>
                     </div>
 
+                    {/* ── Countdown ── */}
                     <div className="relative z-10 text-center pt-2">
                         <motion.p
-                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.6 }}
-                            className="text-slate-400 text-xs tracking-[0.2em] uppercase mb-6"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 1.6 }}
+                            className="text-slate-500 text-[10px] tracking-[0.25em] uppercase mb-6"
                         >
                             Estimated Arrival
                         </motion.p>
 
-                        <div className="h-20 flex items-center justify-center">
+                        <div className="h-24 flex items-center justify-center">
                             {arrived ? (
                                 <motion.div
-                                    initial={{ scale: 0.5, opacity: 0, filter: "blur(10px)" }}
-                                    animate={{ scale: 1, opacity: 1, filter: "blur(0px)" }}
-                                    transition={{ type: "spring", stiffness: 200, damping: 10 }}
-                                    className="text-4xl md:text-5xl font-serif text-amber-400 tracking-widest border-y-2 border-amber-400/30 py-3 px-6 shadow-[0_0_30px_rgba(251,191,36,0.15)] bg-amber-400/5 rounded-lg"
+                                    initial={{ scale: 0.5, opacity: 0, filter: 'blur(12px)' }}
+                                    animate={{ scale: 1, opacity: 1, filter: 'blur(0px)' }}
+                                    transition={{ type: 'spring', stiffness: 180, damping: 12 }}
+                                    className="flex flex-col items-center"
                                 >
-                                    ARRIVED
+                                    <span className="text-4xl md:text-5xl font-serif text-cyan-300 tracking-[0.2em] drop-shadow-[0_0_20px_rgba(103,232,249,0.3)]">
+                                        DOCKED
+                                    </span>
+                                    <span className="text-[10px] text-cyan-400/50 tracking-[0.3em] uppercase mt-3">
+                                        Welcome ashore
+                                    </span>
                                 </motion.div>
                             ) : (
                                 <motion.div
                                     initial={{ y: 10, opacity: 0 }}
                                     animate={{ y: 0, opacity: 1 }}
                                     transition={{ delay: 1.8 }}
-                                    className="flex space-x-4 text-3xl md:text-4xl text-slate-200 font-light tabular-nums"
+                                    className="flex items-center gap-3 text-3xl md:text-4xl text-slate-200 font-light tabular-nums"
                                 >
-                                    <div className="flex flex-col items-center">
-                                        <span className="bg-slate-900/50 px-2 py-1 rounded border border-white/5 shadow-inner">
-                                            {String(timeLeft?.hours).padStart(2, '0')}
-                                        </span>
-                                        <span className="text-[9px] text-slate-500 uppercase tracking-widest mt-2">Hrs</span>
-                                    </div>
-                                    <span className="text-slate-600 mt-2">:</span>
-                                    <div className="flex flex-col items-center">
-                                        <span className="bg-slate-900/50 px-2 py-1 rounded border border-white/5 shadow-inner">
-                                            {String(timeLeft?.minutes).padStart(2, '0')}
-                                        </span>
-                                        <span className="text-[9px] text-slate-500 uppercase tracking-widest mt-2">Min</span>
-                                    </div>
-                                    <span className="text-slate-600 mt-2">:</span>
-                                    <div className="flex flex-col items-center">
-                                        <span className="bg-slate-900/50 px-2 py-1 rounded border border-white/5 shadow-inner">
-                                            {String(timeLeft?.seconds).padStart(2, '0')}
-                                        </span>
-                                        <span className="text-[9px] text-slate-500 uppercase tracking-widest mt-2">Sec</span>
-                                    </div>
+                                    {[
+                                        { value: timeLeft?.hours, label: 'Hrs' },
+                                        { value: timeLeft?.minutes, label: 'Min' },
+                                        { value: timeLeft?.seconds, label: 'Sec' },
+                                    ].map((unit, idx) => (
+                                        <div key={unit.label} className="flex items-center gap-3">
+                                            {idx > 0 && (
+                                                <motion.span
+                                                    animate={{ opacity: [1, 0.3, 1] }}
+                                                    transition={{ repeat: Infinity, duration: 1 }}
+                                                    className="text-cyan-600/50"
+                                                >
+                                                    :
+                                                </motion.span>
+                                            )}
+                                            <div className="flex flex-col items-center">
+                                                <span className="bg-white/[0.03] border border-white/[0.06] px-3 py-1.5 rounded-md shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)] min-w-[52px] text-center">
+                                                    {String(unit.value ?? 0).padStart(2, '0')}
+                                                </span>
+                                                <span className="text-[8px] text-slate-600 uppercase tracking-[0.2em] mt-2">{unit.label}</span>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </motion.div>
                             )}
                         </div>
                     </div>
                 </motion.div>
             </motion.div>
+
+            {/* ═══════════════ ROMANTIC TAGLINE (below ticket) ═══════════════ */}
+            <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 2.5, duration: 2 }}
+                className="relative z-20 text-slate-500/50 text-[10px] tracking-[0.2em] mt-10 text-center italic"
+            >
+                &ldquo;Every wave brings me closer to you.&rdquo;
+            </motion.p>
         </motion.main>
     );
 }

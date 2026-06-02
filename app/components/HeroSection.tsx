@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 
 export default function HeroSection() {
-    const text = "The train has stopped. Welcome to your day, [Her Name].";
+    const text = "The ship has docked. Welcome to your day, [Her Name].";
     const words = text.split(" ");
 
     const container = {
@@ -51,7 +51,7 @@ export default function HeroSection() {
                     </motion.span>
                 ))}
             </motion.div>
-            
+
             <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -59,8 +59,8 @@ export default function HeroSection() {
                 className="absolute bottom-12 flex flex-col items-center"
             >
                 <p className="text-amber-800/60 uppercase tracking-[0.3em] text-xs mb-4">Scroll softly</p>
-                <motion.div 
-                    animate={{ y: [0, 8, 0] }} 
+                <motion.div
+                    animate={{ y: [0, 8, 0] }}
                     transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
                     className="w-[1px] h-12 bg-gradient-to-b from-amber-800/50 to-transparent"
                 />
