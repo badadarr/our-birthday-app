@@ -7,6 +7,8 @@ import { motion, useAnimation } from 'framer-motion';
 import { Sailboat } from 'lucide-react';
 import { useAudio } from '@/app/components/AudioPlayer';
 import { useCountdown } from '@/hooks/useCountdown';
+import TeaserEasterEgg from '@/app/components/TeaserEasterEgg';
+import InteractiveBoat from '@/app/components/InteractiveBoat';
 
 const TARGET_TIME_STR = process.env.NEXT_PUBLIC_MOCK_TARGET_TIME || '2026-06-13T17:00:00Z';
 
@@ -272,20 +274,8 @@ export default function TeaserPage() {
                                 <p className="text-[10px] text-cyan-400/60 mt-1 tracking-widest uppercase">My Day</p>
                             </motion.div>
 
-                            {/* Ship icon */}
-                            <div className="flex-1 px-3 relative flex items-center justify-center">
-                                <div className="h-[1px] w-full bg-gradient-to-r from-cyan-800/20 via-cyan-600/30 to-cyan-800/20" />
-                                <motion.div
-                                    animate={arrived
-                                        ? { x: 0, rotateZ: 0 }
-                                        : { x: [-8, 8, -8], rotateZ: [-4, 4, -4] }
-                                    }
-                                    transition={{ repeat: Infinity, duration: 3.5, ease: 'easeInOut' }}
-                                    className="absolute text-cyan-400 bg-[#020810]/80 px-1.5 drop-shadow-[0_0_8px_rgba(103,232,249,0.5)]"
-                                >
-                                    <Sailboat className="w-5 h-5" strokeWidth={1.5} />
-                                </motion.div>
-                            </div>
+                            {/* Interactive Ship icon */}
+                            <InteractiveBoat arrived={arrived} />
 
                             <motion.div
                                 initial={{ x: 20, opacity: 0 }}
@@ -368,10 +358,13 @@ export default function TeaserPage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 2.5, duration: 2 }}
-                className="relative z-20 text-slate-500/50 text-[10px] tracking-[0.2em] mt-10 text-center italic"
+                className="relative z-20 text-slate-500/50 text-[10px] tracking-[0.2em] mt-10 text-center italic pointer-events-none"
             >
                 &ldquo;Every wave brings me closer to you.&rdquo;
             </motion.p>
+            
+            {/* ═══════════════ FUNNY EASTER EGG (Click mechanics) ═══════════════ */}
+            <TeaserEasterEgg />
         </motion.main>
     );
 }

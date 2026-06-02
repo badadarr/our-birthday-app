@@ -1,9 +1,10 @@
 // components/AudioPlayer.tsx
 'use client';
 
-import React, { createContext, useContext, useRef, useState } from 'react';
+import React, { createContext, useContext, useRef, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Anchor } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 
 interface AudioContextType {
     triggerFadeIn: () => void;
@@ -22,6 +23,15 @@ export const useAudio = () => {
 export default function AudioProvider({ children }: { children: React.ReactNode }) {
     const [hasInteracted, setHasInteracted] = useState(false);
     const audioRef = useRef<HTMLAudioElement | null>(null);
+    const pathname = usePathname();
+    const audioSrc = pathname === '/teaser' ? '/audio/mission-impossible-sound-effect.mp3' : '/audio/blue-yungkai.mp3';
+
+    useEffect(() => {
+        if (hasInteracted && audioRef.current) {
+            audioRef.current.src = audioSrc;
+            audioRef.current.play().catch(e => console.warn(e));
+        }
+    }, [audioSrc, hasInteracted]);
 
     const handleStartJourney = () => {
         setHasInteracted(true);
@@ -109,10 +119,10 @@ export default function AudioProvider({ children }: { children: React.ReactNode 
             <audio 
                 ref={audioRef} 
                 loop 
-                src="/audio/blue-yungkai.mp3" 
+                src={audioSrc} 
                 preload="auto" 
                 onError={(e) => {
-                    console.warn("Audio file missing or unsupported: 'public/audio/blue-yungkai.mp3'");
+                    console.warn(`Audio file missing or unsupported: '${audioSrc}'`);
                     // Remove src to prevent continuous NotSupportedError spam
                     e.currentTarget.removeAttribute("src");
                 }}
