@@ -330,14 +330,15 @@ export default function TeaserPage() {
                                     initial={{ y: 10, opacity: 0 }}
                                     animate={{ y: 0, opacity: 1 }}
                                     transition={{ delay: 1.8 }}
-                                    className="flex items-center gap-3 text-3xl md:text-4xl text-slate-200 font-light tabular-nums"
+                                    className="flex items-center gap-2 text-2xl md:text-3xl text-slate-200 font-light tabular-nums"
                                 >
                                     {[
+                                        { value: timeLeft?.days, label: 'Days' },
                                         { value: timeLeft?.hours, label: 'Hrs' },
                                         { value: timeLeft?.minutes, label: 'Min' },
                                         { value: timeLeft?.seconds, label: 'Sec' },
                                     ].map((unit, idx) => (
-                                        <div key={unit.label} className="flex items-center gap-3">
+                                        <div key={unit.label} className="flex items-center gap-2">
                                             {idx > 0 && (
                                                 <motion.span
                                                     animate={{ opacity: [1, 0.3, 1] }}
@@ -348,7 +349,7 @@ export default function TeaserPage() {
                                                 </motion.span>
                                             )}
                                             <div className="flex flex-col items-center">
-                                                <span className="bg-white/[0.03] border border-white/[0.06] px-3 py-1.5 rounded-md shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)] min-w-[52px] text-center">
+                                                <span className="bg-white/[0.03] border border-white/[0.06] px-3 py-1.5 rounded-md shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)] min-w-[48px] text-center">
                                                     {String(unit.value ?? 0).padStart(2, '0')}
                                                 </span>
                                                 <span className="text-[8px] text-slate-600 uppercase tracking-[0.2em] mt-2">{unit.label}</span>

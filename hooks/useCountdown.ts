@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 export function useCountdown(targetTimeStr: string) {
-    const [timeLeft, setTimeLeft] = useState<{ hours: number; minutes: number; seconds: number } | null>(null);
+    const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number } | null>(null);
     const [isArrived, setIsArrived] = useState(false);
     const [isClient, setIsClient] = useState(false);
 
@@ -9,34 +9,32 @@ export function useCountdown(targetTimeStr: string) {
         setIsClient(true);
         const targetTime = new Date(targetTimeStr).getTime();
 
-        const interval = setInterval(() => {
-            const mockTime = process.env.NEXT_PUBLIC_MOCK_TIME;
-            // If mockTime exists, we use it for the initial time calculation, but we need it to tick.
-            // Since mockTime is static, it's better to just mock the targetTime or the initial offset.
-            // A simpler way: we just let the system time run. If they want to mock, they set the system clock,
-            // OR we calculate the offset from mockTime.
-            // Let's just use Date.now() and allow them to mock the TARGET_TIME instead for easier testing.
+        const calculate = () => {
             const now = Date.now();
             const difference = targetTime - now;
 
             if (difference <= 0) {
-                clearInterval(interval);
                 setIsArrived(true);
-                setTimeLeft({ hours: 0, minutes: 0, seconds: 0 });
+                setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+                return true; // signal to stop
             } else {
+                const days = Math.floor(difference / (1000 * 60 * 60 * 24));
                 const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-                setTimeLeft({ hours, minutes, seconds });
+                setTimeLeft({ days, hours, minutes, seconds });
+                return false;
             }
-        }, 1000);
+        };
 
-        // Run once immediately
-        const initialDiff = targetTime - Date.now();
-        if (initialDiff <= 0) {
-            setIsArrived(true);
-            setTimeLeft({ hours: 0, minutes: 0, seconds: 0 });
-        }
+        // Run once immediately on mount
+        const done = calculate();
+        if (done) return;
+
+        const interval = setInterval(() => {
+            const stopped = calculate();
+            if (stopped) clearInterval(interval);
+        }, 1000);
 
         return () => clearInterval(interval);
     }, [targetTimeStr]);
