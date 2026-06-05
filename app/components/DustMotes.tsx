@@ -9,6 +9,7 @@ interface Particle {
     id: number;
     x: number;
     y: number;
+    xDrift: number;
     size: number;
     duration: number;
     delay: number;
@@ -25,6 +26,7 @@ export default function DustMotes() {
                 id: i,
                 x: Math.random() * 100,
                 y: Math.random() * 100,
+                xDrift: Math.random() > 0.5 ? 2 : -2,
                 size: Math.random() * 4 + 1,
                 duration: Math.random() * 10 + 10,
                 delay: Math.random() * 5,
@@ -46,7 +48,7 @@ export default function DustMotes() {
                     animate={{
                         opacity: [0, 0.4, 0],
                         y: [`${p.y}vh`, `${p.y - 10}vh`],
-                        x: [`${p.x}vw`, `${p.x + (Math.random() > 0.5 ? 2 : -2)}vw`],
+                        x: [`${p.x}vw`, `${p.x + p.xDrift}vw`],
                     }}
                     transition={{
                         duration: p.duration,

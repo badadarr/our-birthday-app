@@ -1,10 +1,9 @@
 // app/teaser/page.tsx
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, useAnimation } from 'framer-motion';
-import { Sailboat } from 'lucide-react';
 import { useAudio } from '@/app/components/AudioPlayer';
 import { useCountdown } from '@/hooks/useCountdown';
 import TeaserEasterEgg from '@/app/components/TeaserEasterEgg';
@@ -70,15 +69,7 @@ export default function TeaserPage() {
         }));
     }, [waveControls]);
 
-    // Arrival trigger
-    useEffect(() => {
-        if (arrived && !hasTriggeredArrival.current) {
-            hasTriggeredArrival.current = true;
-            handleArrivalSequence();
-        }
-    }, [arrived]);
-
-    const handleArrivalSequence = () => {
+    const handleArrivalSequence = useCallback(() => {
         waveControls.stop();
         triggerFadeIn();
 
@@ -89,7 +80,15 @@ export default function TeaserPage() {
         setTimeout(() => {
             router.push('/');
         }, 6000);
-    };
+    }, [waveControls, triggerFadeIn, router]);
+
+    // Arrival trigger
+    useEffect(() => {
+        if (arrived && !hasTriggeredArrival.current) {
+            hasTriggeredArrival.current = true;
+            handleArrivalSequence();
+        }
+    }, [arrived, handleArrivalSequence]);
 
     if (!isClient) return <div className="min-h-screen bg-[#020810]" />;
 

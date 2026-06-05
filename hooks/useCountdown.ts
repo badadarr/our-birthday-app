@@ -1,12 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useSyncExternalStore } from 'react';
+
+const emptySubscribe = () => () => {};
 
 export function useCountdown(targetTimeStr: string) {
     const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number } | null>(null);
     const [isArrived, setIsArrived] = useState(false);
-    const [isClient, setIsClient] = useState(false);
+
+    const isClient = useSyncExternalStore(emptySubscribe, () => true, () => false);
 
     useEffect(() => {
-        setIsClient(true);
         const targetTime = new Date(targetTimeStr).getTime();
 
         const calculate = () => {

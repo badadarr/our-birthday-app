@@ -12,6 +12,15 @@ const HONK_MESSAGES = [
     'Kita hampir sampai! ✨',
     'HONK HONK! 📯',
     '*splash* 💦',
+    'Bensin abis, kapten lagi ngayuh pake sendok garpu 🍴',
+    'Jangan diklik terus, kapalnya pusing! 🥴',
+    'Sabar, kapalnya lagi antre di pelabuhan Merak 🚗',
+    'Kapten lagi nelpon SPBU terdekat... 📞',
+    'GPS-nya bilang: "Recalculating..." 🗺️',
+    'Kapalnya minta istirahat 5 menit ⏸️',
+    'Layarnya sobek, kapten lagi jahit pake benang nylon 🧵',
+    'Penumpang gelap detected: 1 kucing 🐱',
+    'Wi-Fi kapal lemot, sabar ya... 📶',
 ];
 
 export default function InteractiveBoat({ arrived }: { arrived: boolean }) {

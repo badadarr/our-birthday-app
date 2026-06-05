@@ -1,32 +1,27 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
+
+const emptySubscribe = () => () => {};
+const getCookie = () => document.cookie.includes('bypass_teaser=true');
+const getServerSnapshot = () => false;
 
 export default function BypassToggle() {
     const router = useRouter();
-    const [isBypassed, setIsBypassed] = useState(false);
-    const [mounted, setMounted] = useState(false);
 
-    useEffect(() => {
-        setMounted(true);
-        // Cek cookie saat ini
-        const isBypassedCookie = document.cookie.includes('bypass_teaser=true');
-        setIsBypassed(isBypassedCookie);
-    }, []);
+    const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
+    const isBypassed = useSyncExternalStore(emptySubscribe, getCookie, getServerSnapshot);
 
     if (!mounted) return null;
 
     const toggleBypass = () => {
         if (isBypassed) {
             document.cookie = "bypass_teaser=false; path=/;";
-            setIsBypassed(false);
-            router.refresh(); // Refresh agar middleware berjalan
         } else {
             document.cookie = "bypass_teaser=true; path=/;";
-            setIsBypassed(true);
-            router.refresh();
         }
+        router.refresh(); // Refresh agar middleware berjalan & useSyncExternalStore re-reads cookie
     };
 
     return (
