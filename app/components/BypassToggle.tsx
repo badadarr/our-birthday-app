@@ -1,25 +1,26 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+
+const emptySubscribe = () => () => {};
+const getCookie = () => typeof document !== 'undefined' ? document.cookie.includes('bypass_teaser=true') : false;
+const getServerSnapshot = () => false;
 
 export default function BypassToggle() {
     const router = useRouter();
     const pathname = usePathname();
-    const [isBypassed, setIsBypassed] = useState(false);
-    const [mounted, setMounted] = useState(false);
+    const [, setTick] = useState(0);
 
-    useEffect(() => {
-        setMounted(true);
-        setIsBypassed(document.cookie.includes('bypass_teaser=true'));
-    }, []);
+    const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
+    const isBypassed = useSyncExternalStore(emptySubscribe, getCookie, getServerSnapshot);
 
     if (!mounted) return null;
 
     const toggleBypass = () => {
         const newValue = !isBypassed;
-        setIsBypassed(newValue);
         document.cookie = `bypass_teaser=${newValue}; path=/;`;
+        setTick(t => t + 1); // Memaksa re-render agar useSyncExternalStore membaca cookie baru secara instan
         
         if (newValue && pathname === '/teaser') {
             // Jika kita menyalakan bypass dan sedang di halaman teaser, langsung arahkan ke halaman utama
