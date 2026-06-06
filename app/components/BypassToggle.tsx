@@ -1,27 +1,33 @@
 'use client';
 
-import { useSyncExternalStore } from 'react';
-import { useRouter } from 'next/navigation';
-
-const emptySubscribe = () => () => {};
-const getCookie = () => document.cookie.includes('bypass_teaser=true');
-const getServerSnapshot = () => false;
+import { useState, useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 
 export default function BypassToggle() {
     const router = useRouter();
+    const pathname = usePathname();
+    const [isBypassed, setIsBypassed] = useState(false);
+    const [mounted, setMounted] = useState(false);
 
-    const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
-    const isBypassed = useSyncExternalStore(emptySubscribe, getCookie, getServerSnapshot);
+    useEffect(() => {
+        setMounted(true);
+        setIsBypassed(document.cookie.includes('bypass_teaser=true'));
+    }, []);
 
     if (!mounted) return null;
 
     const toggleBypass = () => {
-        if (isBypassed) {
-            document.cookie = "bypass_teaser=false; path=/;";
+        const newValue = !isBypassed;
+        setIsBypassed(newValue);
+        document.cookie = `bypass_teaser=${newValue}; path=/;`;
+        
+        if (newValue && pathname === '/teaser') {
+            // Jika kita menyalakan bypass dan sedang di halaman teaser, langsung arahkan ke halaman utama
+            router.push('/');
         } else {
-            document.cookie = "bypass_teaser=true; path=/;";
+            // Jika kita mematikan bypass (dan di halaman utama), refresh akan memicu proxy untuk redirect kembali ke teaser
+            router.refresh();
         }
-        router.refresh(); // Refresh agar middleware berjalan & useSyncExternalStore re-reads cookie
     };
 
     return (
