@@ -44,13 +44,9 @@ export default function SecretVoiceNote() {
         <div className="flex flex-col items-center justify-center mt-20 mb-10">
             <audio
                 ref={audioRef}
-                src="/audio/voice-note.mp3"
+                src="/audio/secreto-magic-voice-badar.mp4"
                 onEnded={handleEnded}
                 preload="auto"
-                onError={(e) => {
-                    console.warn("Voice note file missing: '/audio/voice-note.mp3'");
-                    e.currentTarget.removeAttribute("src");
-                }}
             />
 
             <p className="font-serif text-sm text-amber-900/40 italic mb-6">
